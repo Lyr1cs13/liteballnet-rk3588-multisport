@@ -50,7 +50,7 @@ def main():
         set_run(run, size=10.5)
 
     table = document.tables[0]
-    table.cell(2, 1).text = '多球种轻量时序热图追踪模型的RK3588端侧迁移验证'
+    table.cell(2, 1).text = '基于TrackNet思路的多球种轻量追踪模型板端部署测试'
     for cell in table.rows[2].cells:
         for para in cell.paragraphs:
             para.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -69,11 +69,11 @@ def main():
     r = p.add_run('一、工作内容')
     set_run(r, bold=True, size=11)
 
-    add_text(cell, '本周接收算法方向同学交接的网球、乒乓球、羽毛球三套LiteBallNet权重、对应视频片段及PC参考后处理，完成面向RK3588的统一迁移验证。该项工作用于验证轻量时序热图追踪模型在不同小球场景下的板端可运行性，不替代原网球训练分析主工程。')
-    add_text(cell, '1.梳理模型输入输出与转换约束。三套模型均以当前帧、前一帧、前两帧的BGR图像拼接为9通道时序输入，固定尺寸为360×640，输出单通道球体响应热图。依据交接代码复现轻量深度可分离U-Net及坐标注意力结构，并使用严格状态字典加载三个运动的独立权重。', bold=False)
-    add_text(cell, '2.完成PC侧模型转换。使用RKNN-Toolkit2.3.2，将三套PT权重分别导出ONNX，并从各自视频中按间隔采样生成校准数据，完成FP与INT8 RKNN转换。正式参考结果选用FP模型，优先保持PC端热图数值与候选结果的一致性；针对源模型NCHW语义与RKNN优化图NHWC输入的差异，板端统一传入uint8[1,360,640,9]，消除了Runtime逐帧隐式布局转换。')
-    add_text(cell, '3.完成RK3588端侧并行推理与参考后处理还原。每套模型创建3个独立RKNN Runtime，分别绑定NPU Core0/Core1/Core2；以三帧窗口加载视频，按完成时间计算24窗口滑动纯推理FPS。除RKNN推理后端和性能标签外，直接复用交接PC脚本的候选峰值提取、时序稳定、尖峰清理、受限插值、短片段剔除与红色渐隐绘制。')
-    add_text(cell, '4.完成三段参考效果可视化输出。输出视频右上角仅显示滑动纯推理FPS，其他轨迹表现与交接PC参考实现保持一致；同步保存逐帧坐标CSV和性能JSON，便于后续与PC结果复核。')
+    add_text(cell, '本周主要配合算法同学钊沣完成LiteBallNet的板端验证。钊沣交接了网球、乒乓球、羽毛球三套权重、测试视频和PC参考脚本；该模型以TrackNet的连续三帧输入与热图定位思路为原型，采用更轻量的网络结构。本周我的工作是将PC侧流程迁移到RK3588，保证模型输入、追踪规则和显示效果能够对应。')
+    add_text(cell, '1.先核对PC侧流程。模型每次取当前帧、前一帧和前两帧，缩放后拼成9通道输入，输出一张球位置热图。钊沣的脚本会从热图中找候选点，再处理短暂丢球、错误跳点和轨迹断开，最后画出红色渐隐拖尾。我先按这个流程核对了板端需要保留的部分，避免只跑通模型却让展示效果变样。')
+    add_text(cell, '2.完成模型转换与输入适配。使用PC虚拟机中的RKNN-Toolkit2.3.2，将三套PT权重导出ONNX并转换为RKNN。转换后发现模型在板端运行时需要按NHWC方式传入9通道数据；调整输入布局后，消除了Runtime逐帧自动转置带来的额外开销。正式效果测试采用FP模型，优先保证与PC热图结果接近；INT8版本仅保留作性能探索。')
+    add_text(cell, '3.完成板端运行器。为三套模型各建立3个RKNN Runtime，分别绑定RK3588的NPU三核并行处理三帧窗口。板端只替换了原脚本中的模型推理部分，其余候选提取、轨迹稳定、补点、异常点清理和红色拖尾绘制均沿用钊沣的参考实现；右上角额外显示24窗口滑动纯推理FPS。')
+    add_text(cell, '4.完成三段视频输出。每段视频同时保存轨迹坐标CSV和测试JSON，后续可直接和PC结果对照。乒乓球源视频为120FPS，按原脚本设定输出为30FPS慢放；网球和羽毛球保持各自原有输出策略。')
 
     p = cell.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -83,7 +83,7 @@ def main():
     caption = cell.add_paragraph()
     caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
     caption.paragraph_format.space_after = Pt(7)
-    r = caption.add_run('图1 三类运动片段的RK3588端侧FP参考还原结果，右上角为滑动纯推理FPS')
+    r = caption.add_run('图1 按PC参考后处理输出的RK3588结果关键帧，右上角为滑动纯推理FPS')
     set_run(r, size=9)
 
     add_text(cell, '二、测试结果', bold=True, size=11)
@@ -100,7 +100,7 @@ def main():
         set_run(run, bold=bold)
 
     add_text(cell, '三、心得体会', bold=True, size=11)
-    add_text(cell, '本周的关键不在于单纯完成格式转换，而在于保持时序输入、归一化、热图解码和轨迹稳定化规则的一致性，并区分模型吞吐与完整视频处理帧率。三类片段的结果表明，统一的转换与运行框架能够承载不同小球项目的独立权重；后续应在更长视频和真实采集画面上继续验证复杂遮挡、快速移动与场景切换下的稳定性。')
+    add_text(cell, '这次测试让我认识到，板端迁移不能只看模型能否运行，还要把输入顺序、归一化方式和后处理规则一并对齐。三套模型已能在同一套RK3588运行框架下完成输出；下一步可在更长视频和真实采集画面上继续检查遮挡、快速移动和切换场景时的稳定性。')
 
     sign = cell.add_paragraph()
     sign.paragraph_format.space_before = Pt(8)
