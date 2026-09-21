@@ -1,0 +1,17 @@
+{
+  "sport": "badminton",
+  "precision": "FP16",
+  "windows": 182,
+  "pure_inference_seconds": 8.95226619099958,
+  "pure_inference_fps": 20.330047846765208,
+  "scope": "three RKNN Runtime instances pinned to NPU cores 0/1/2; excludes decode, preprocessing, reference post-processing and video writing",
+  "postprocess": "verbatim logic extracted from the transferred PC renderer; only the NPU backend and FPS overlay are added",
+  "output": "/home/elf/0test/liteballnet_rk3588/outputs/badminton_reference_fp.mp4",
+  "jump_stats": {
+    "pairs": 181,
+    "jump80": 0,
+    "jump120": 0,
+    "jump180": 0,
+    "max_jump": 78.04094764677775
+  }
+}

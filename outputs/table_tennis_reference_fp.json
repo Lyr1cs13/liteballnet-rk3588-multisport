@@ -1,0 +1,17 @@
+{
+  "sport": "table_tennis",
+  "precision": "FP16",
+  "windows": 369,
+  "pure_inference_seconds": 16.328641182000865,
+  "pure_inference_fps": 22.59832865987345,
+  "scope": "three RKNN Runtime instances pinned to NPU cores 0/1/2; excludes decode, preprocessing, reference post-processing and video writing",
+  "postprocess": "verbatim logic extracted from the transferred PC renderer; only the NPU backend and FPS overlay are added",
+  "output": "/home/elf/0test/liteballnet_rk3588/outputs/table_tennis_reference_fp.mp4",
+  "jump_stats": {
+    "pairs": 359,
+    "jump80": 0,
+    "jump120": 0,
+    "jump180": 0,
+    "max_jump": 47.4517063652888
+  }
+}

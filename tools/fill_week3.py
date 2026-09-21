@@ -71,9 +71,9 @@ def main():
 
     add_text(cell, '本周接收算法方向同学交接的网球、乒乓球、羽毛球三套LiteBallNet权重、对应视频片段及PC参考后处理，完成面向RK3588的统一迁移验证。该项工作用于验证轻量时序热图追踪模型在不同小球场景下的板端可运行性，不替代原网球训练分析主工程。')
     add_text(cell, '1.梳理模型输入输出与转换约束。三套模型均以当前帧、前一帧、前两帧的BGR图像拼接为9通道时序输入，固定尺寸为360×640，输出单通道球体响应热图。依据交接代码复现轻量深度可分离U-Net及坐标注意力结构，并使用严格状态字典加载三个运动的独立权重。', bold=False)
-    add_text(cell, '2.完成PC侧模型转换。使用RKNN-Toolkit2.3.2，将三套PT权重分别导出ONNX，并从各自视频中按间隔采样生成校准数据，完成INT8 RKNN转换。针对源模型NCHW语义与RKNN优化图NHWC输入的差异，板端统一传入uint8[1,360,640,9]，消除了Runtime逐帧隐式布局转换。')
-    add_text(cell, '3.完成RK3588端侧并行推理与结果生成。每套模型创建3个独立RKNN Runtime，分别绑定NPU Core0/Core1/Core2；以三帧窗口加载视频，按完成时间计算24窗口滑动纯推理FPS。后处理从热图峰值提取候选球心，结合时间连续性进行轨迹关联；未检测到可靠候选时主动断开，避免跨场景误连。')
-    add_text(cell, '4.完成三段可视化输出。输出视频右上角仅显示滑动纯推理FPS；轨迹使用绿色球心与渐变短拖尾展示。同步保存逐帧坐标CSV和性能JSON，便于后续复核、算法对照或重新绘制。')
+    add_text(cell, '2.完成PC侧模型转换。使用RKNN-Toolkit2.3.2，将三套PT权重分别导出ONNX，并从各自视频中按间隔采样生成校准数据，完成FP与INT8 RKNN转换。正式参考结果选用FP模型，优先保持PC端热图数值与候选结果的一致性；针对源模型NCHW语义与RKNN优化图NHWC输入的差异，板端统一传入uint8[1,360,640,9]，消除了Runtime逐帧隐式布局转换。')
+    add_text(cell, '3.完成RK3588端侧并行推理与参考后处理还原。每套模型创建3个独立RKNN Runtime，分别绑定NPU Core0/Core1/Core2；以三帧窗口加载视频，按完成时间计算24窗口滑动纯推理FPS。除RKNN推理后端和性能标签外，直接复用交接PC脚本的候选峰值提取、时序稳定、尖峰清理、受限插值、短片段剔除与红色渐隐绘制。')
+    add_text(cell, '4.完成三段参考效果可视化输出。输出视频右上角仅显示滑动纯推理FPS，其他轨迹表现与交接PC参考实现保持一致；同步保存逐帧坐标CSV和性能JSON，便于后续与PC结果复核。')
 
     p = cell.add_paragraph()
     p.alignment = WD_ALIGN_PARAGRAPH.CENTER
@@ -83,7 +83,7 @@ def main():
     caption = cell.add_paragraph()
     caption.alignment = WD_ALIGN_PARAGRAPH.CENTER
     caption.paragraph_format.space_after = Pt(7)
-    r = caption.add_run('图1 三类运动片段的RK3588端侧结果关键帧，右上角为滑动纯推理FPS')
+    r = caption.add_run('图1 三类运动片段的RK3588端侧FP参考还原结果，右上角为滑动纯推理FPS')
     set_run(r, size=9)
 
     add_text(cell, '二、测试结果', bold=True, size=11)
@@ -91,16 +91,16 @@ def main():
     result.paragraph_format.space_after = Pt(7)
     result.paragraph_format.line_spacing = 1.16
     for text, bold in [
-        ('网球：279个三帧窗口，纯推理35.98FPS；', True),
-        ('乒乓球：369个三帧窗口，纯推理36.10FPS；', True),
-        ('羽毛球：182个三帧窗口，纯推理36.28FPS。', True),
+        ('网球：279个三帧窗口，FP纯推理21.82FPS；', True),
+        ('乒乓球：369个三帧窗口，FP纯推理22.60FPS；', True),
+        ('羽毛球：182个三帧窗口，FP纯推理20.33FPS。', True),
         ('上述统计仅覆盖三路RKNN Runtime模型推理，排除视频解码、缩放、热图解码、轨迹绘制及视频写入。', False),
     ]:
         run = result.add_run(text)
         set_run(run, bold=bold)
 
     add_text(cell, '三、心得体会', bold=True, size=11)
-    add_text(cell, '本周的关键不在于单纯完成格式转换，而在于保持时序输入、归一化和热图输出语义一致，并区分模型吞吐与完整视频处理帧率。三类片段的结果表明，统一的转换与运行框架能够承载不同小球项目的独立权重；后续应结合更长视频和真实采集画面，继续验证复杂遮挡、快速移动与场景切换下的稳定性。')
+    add_text(cell, '本周的关键不在于单纯完成格式转换，而在于保持时序输入、归一化、热图解码和轨迹稳定化规则的一致性，并区分模型吞吐与完整视频处理帧率。三类片段的结果表明，统一的转换与运行框架能够承载不同小球项目的独立权重；后续应在更长视频和真实采集画面上继续验证复杂遮挡、快速移动与场景切换下的稳定性。')
 
     sign = cell.add_paragraph()
     sign.paragraph_format.space_before = Pt(8)
