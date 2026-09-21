@@ -1,0 +1,10 @@
+{
+  "sport": "badminton",
+  "model": "/home/elf/0test/liteballnet_rk3588/models/badminton_360x640_int8.rknn",
+  "video": "/home/elf/0test/liteballnet_rk3588/sources/badminton.mp4",
+  "windows": 182,
+  "pure_inference_seconds": 5.017076087000532,
+  "pure_inference_fps": 36.27610920064978,
+  "scope": "three RKNN Runtime instances pinned to NPU cores 0/1/2; excludes decode, preprocessing, postprocessing and video writing",
+  "output": "/home/elf/0test/liteballnet_rk3588/outputs/badminton_rknn.mp4"
+}

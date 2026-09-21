@@ -1,0 +1,21 @@
+{
+  "sport": "tennis",
+  "checkpoint": "tennis_full_seed37.pt",
+  "input_layout": "NCHW",
+  "input_shape": [
+    1,
+    9,
+    360,
+    640
+  ],
+  "input_semantics": "BGR current, previous, pre-previous; raw uint8 on board; /255 in RKNN config",
+  "output_shape": [
+    1,
+    1,
+    360,
+    640
+  ],
+  "precision": "int8",
+  "parameters": 45644,
+  "calibration_windows": 56
+}
