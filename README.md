@@ -40,6 +40,16 @@ python3 edge/run_reference_pipeline.py --sport badminton --root .
 
 运行器以当前帧、前一帧和前两帧组成`uint8[1,360,640,9]`的NHWC输入，调用对应FP RKNN模型，并输出MP4、CSV和JSON。乒乓球输入为120FPS，按交接演示策略以30FPS输出；其余视频按源帧率输出。
 
+## 桌面演示
+
+连接显示屏后，可在RK3588桌面创建“一键回放”图标：
+
+```bash
+bash desktop/install_desktop_launcher.sh
+```
+
+双击`RK3588 Board Verification`即可查看板端生成的视频回放、设备型号、RKNN后端、结果JSON中的平均纯推理FPS、CSV记录数量和当前RKNPU负载。界面明确标注为已生成结果回放，适合录屏或现场展示板端部署证据。
+
 ## PC转换与验证边界
 
 转换在RKNN-Toolkit2.3.2环境完成：PT权重导出为固定尺寸ONNX，再生成FP和INT8 RKNN模型。正式效果视频使用FP模型，以优先保持算法侧参考输出；INT8模型仅用于性能探索。
