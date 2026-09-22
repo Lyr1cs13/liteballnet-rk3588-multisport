@@ -31,6 +31,12 @@ SPORTS = {
 }
 
 
+def report_progress(enabled, percent, message):
+    """Emit machine-readable stage updates for the desktop verification UI."""
+    if enabled:
+        print(f'PROGRESS|{percent}|{message}', flush=True)
+
+
 def reference_args():
     """Exact defaults used by the transferred renderer's reference pipeline."""
     return SimpleNamespace(
@@ -173,18 +179,28 @@ def main():
     parser.add_argument('--sport', required=True, choices=SPORTS)
     parser.add_argument('--root', default='.')
     parser.add_argument('--warmup', type=int, default=15)
+    parser.add_argument('--output-dir', default='',
+                        help='Optional directory for a non-destructive verification result.')
+    parser.add_argument('--progress', action='store_true',
+                        help='Print stage progress records for a desktop UI.')
     args = parser.parse_args()
     root = Path(args.root).resolve()
     spec = SPORTS[args.sport]
     model, video = root / spec['model'], root / spec['video']
-    output = root / 'outputs' / f'{args.sport}_reference_fp.mp4'
+    output_dir = Path(args.output_dir).expanduser() if args.output_dir else root / 'outputs'
+    if not output_dir.is_absolute():
+        output_dir = root / output_dir
+    output = output_dir / f'{args.sport}_reference_fp.mp4'
     csv_path = output.with_suffix('.csv')
-    output.parent.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
     if not model.exists():
         raise FileNotFoundError(model)
 
+    report_progress(args.progress, 8, '读取三帧时序视频')
     tensors, indices, total, width, height, fps = load_temporal_windows(video)
+    report_progress(args.progress, 20, '完成输入窗口构建')
     heatmaps, rolling, elapsed = infer(model, tensors, indices, total, args.warmup)
+    report_progress(args.progress, 80, '完成三核NPU推理')
     post_args = reference_args()
     scale_x, scale_y = width / 640.0, height / 360.0
     rows = [[] if heatmap is None else topk_heatmap_candidates(np.squeeze(heatmap), post_args, scale_x, scale_y) for heatmap in heatmaps]
@@ -192,7 +208,9 @@ def main():
     stable = remove_temporal_spikes(stable, post_args)
     stable = interpolate_guarded(stable, post_args.interp_gap, post_args.gate_max)
     stable = remove_short_fragments(stable, post_args)
+    report_progress(args.progress, 88, '完成轨迹稳定与清理')
     write_outputs(video, output, csv_path, stable, rolling, spec['output_fps'])
+    report_progress(args.progress, 98, '完成结果视频与CSV写入')
     result = {
         'sport': args.sport, 'precision': 'FP16', 'windows': len(tensors),
         'pure_inference_seconds': elapsed, 'pure_inference_fps': len(tensors) / elapsed,
@@ -201,6 +219,7 @@ def main():
         'output': str(output), 'jump_stats': adjacent_track_stats(stable['tracks']),
     }
     output.with_suffix('.json').write_text(json.dumps(result, indent=2), encoding='utf-8')
+    report_progress(args.progress, 100, '板端验证完成')
     print(json.dumps(result, indent=2))
 
 
