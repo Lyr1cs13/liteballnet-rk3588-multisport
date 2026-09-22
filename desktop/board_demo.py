@@ -7,7 +7,6 @@ It intentionally labels the view as a replay, not a live inference session.
 """
 
 import argparse
-import base64
 import csv
 import json
 from pathlib import Path
@@ -16,6 +15,7 @@ import tkinter as tk
 from tkinter import ttk
 
 import cv2
+from PIL import Image, ImageTk
 
 
 SPORTS = {
@@ -201,8 +201,7 @@ class BoardDemo:
                 target = (max(int(source_w * scale), 1), max(int(source_h * scale), 1))
                 frame = cv2.resize(frame, target, interpolation=cv2.INTER_AREA)
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-                ppm = f"P6 {frame.shape[1]} {frame.shape[0]} 255\n".encode() + frame.tobytes()
-                self.frame_image = tk.PhotoImage(data=base64.b64encode(ppm))
+                self.frame_image = ImageTk.PhotoImage(Image.fromarray(frame))
                 self.video_label.configure(image=self.frame_image)
 
         elapsed = max(time.monotonic() - self.last_frame_at, 0.001)
