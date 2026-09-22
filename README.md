@@ -48,7 +48,7 @@ python3 edge/run_reference_pipeline.py --sport badminton --root .
 bash desktop/install_desktop_launcher.sh
 ```
 
-双击`RK3588 Board Verification`即可查看板端生成的视频回放、设备型号、RKNN后端、结果JSON中的平均纯推理FPS、CSV记录数量和当前RKNPU负载。该查看器依赖Python3、Tkinter、OpenCV和Pillow。界面明确标注为已生成结果回放，适合录屏或现场展示板端部署证据。
+双击`RK3588 Board Verification`即可启动QiuWu AI风格的多球种端侧验证页。页面支持触控选择网球、乒乓球或羽毛球，播放板端生成的视频回放，并同步显示设备型号、RKNN后端、结果JSON中的平均纯推理FPS、CSV记录数量和当前RKNPU负载。查看器依赖Python3、Tkinter、OpenCV和Pillow，界面明确标注为已生成结果回放，适合录屏或现场展示板端部署证据。
 
 ## PC转换与验证边界
 
