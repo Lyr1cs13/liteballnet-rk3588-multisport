@@ -1,5 +1,7 @@
 # LiteBallNet RK3588多球种追踪
 
+> 本仓库保留早期FP部署验证历史。当前约46FPS纯推理版本、约42FPS处理流水线、PyQt演示、转换量化工程及完整恢复材料，已统一保存到私有仓库[qiuwu-ai-rk3588-private-dev](https://github.com/Lyr1cs13/qiuwu-ai-rk3588-private-dev)。继续开发请从新仓库的AGENTS.md和HANDOFF.md开始；下面的性能与说明属于旧版本。
+
 面向网球、乒乓球和羽毛球的RK3588端侧时序热图追踪验证工程。
 
 LiteBallNet以TrackNet的三帧时序热图追踪范式为原型：连续三帧画面拼接后输入网络，输出当前帧目标位置热图，再结合参考后处理得到稳定轨迹。本工程负责将算法侧交接的三套模型迁移至RK3588，并保持PC参考流程的轨迹表现和记录格式。
